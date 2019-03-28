@@ -7,7 +7,7 @@
  * @author 		ClubPress
  * @category 	Core
  * @package 	WPClubManager/Functions
- * @version     1.5.6
+ * @version     2.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
@@ -81,6 +81,8 @@ function wpcm_get_match_outcome( $post ) {
 
 	$club = get_default_club();
 	$home_club = get_post_meta( $post, 'wpcm_home_club', true );
+	$walkover = get_post_meta( $post, '_wpcm_walkover', true );
+	$postponed = get_post_meta( $post, '_wpcm_postponed', true );
 	if( get_option('wpcm_sport' ) !== 'cricket' ) {
 		if( get_post_meta( $post, 'wpcm_shootout', true ) ) {
 			$home_goals = get_post_meta( $post, '_wpcm_home_shootout_goals', true );
@@ -95,23 +97,42 @@ function wpcm_get_match_outcome( $post ) {
 		$home_goals = $runs['home'] + $extras['home'];
 		$away_goals = $runs['away'] + $extras['away'];
 	}
-
-	if ( $home_goals == $away_goals ) {
-		$outcome = 'draw';
-	}
-	if ( $club == $home_club ) {
-		if ( $home_goals > $away_goals ) {
-			$outcome = 'win';
-		}
-		if ( $home_goals < $away_goals ) {
-			$outcome = 'loss';
+	if( $postponed ) {
+		if( $walkover !== '' ) {
+			if ( $club == $home_club ) {
+				if( $walkover == 'home_win') {
+					$outcome = 'win';
+				} elseif ( $walkover == 'away_win' ){
+					$outcome = 'loss';
+				}
+			} else {
+				if( $walkover == 'home_win') {
+					$outcome = 'loss';
+				} elseif ( $walkover == 'away_win' ){
+					$outcome = 'win';
+				}
+			}
+		} else {
+			$outcome = 'postponed';
 		}
 	} else {
-		if ( $home_goals > $away_goals ) {
-			$outcome = 'loss';
+		if ( $home_goals == $away_goals ) {
+			$outcome = 'draw';
 		}
-		if ( $home_goals < $away_goals ) {
-			$outcome = 'win';
+		if ( $club == $home_club ) {
+			if ( $home_goals > $away_goals ) {
+				$outcome = 'win';
+			}
+			if ( $home_goals < $away_goals ) {
+				$outcome = 'loss';
+			}
+		} else {
+			if ( $home_goals > $away_goals ) {
+				$outcome = 'loss';
+			}
+			if ( $home_goals < $away_goals ) {
+				$outcome = 'win';
+			}
 		}
 	}
 
@@ -133,6 +154,8 @@ function wpcm_get_match_result( $post ) {
 	$hide = get_option( 'wpcm_hide_scores');
 	$delimiter = get_option( 'wpcm_match_goals_delimiter' );
 	$played = get_post_meta( $post, 'wpcm_played', true );
+	$postponed = get_post_meta( $post, '_wpcm_postponed', true );
+	$walkover = get_post_meta( $post, '_wpcm_walkover', true );
 	$home_goals = get_post_meta( $post, 'wpcm_home_goals', true );
 	$away_goals = get_post_meta( $post, 'wpcm_away_goals', true );
 	if( $sport == 'gaelic' ) {
@@ -147,7 +170,21 @@ function wpcm_get_match_result( $post ) {
 		$wickets = unserialize( get_post_meta( $post, '_wpcm_match_wickets', true ) );
 	}
 
-	if( $hide == 'yes' && ! is_user_logged_in() ) {
+	if( $postponed ) {
+		if( $walkover == 'home_win' ) {
+			$result = _x( 'H', 'HW - home walkover', 'wp-club-manager' ) . ' ' . $delimiter . ' ' . _x( 'W', 'HW - home walkover', 'wp-club-manager' );
+			$side1 = _x( 'H', 'HW - home walkover', 'wp-club-manager' );
+			$side2 = _x( 'W', 'HW - home walkover', 'wp-club-manager' );
+		} elseif( $walkover == 'away_win' ) {
+			$result = _x( 'A', 'AW - away walkover', 'wp-club-manager' ) . ' ' . $delimiter . ' ' . _x( 'W', 'AW - away walkover', 'wp-club-manager' );
+			$side1 = _x( 'A', 'AW - away walkover', 'wp-club-manager' );
+			$side2 = _x( 'W', 'AW - away walkover', 'wp-club-manager' );
+		} else {
+			$result = _x( 'P', 'Postponed', 'wp-club-manager' ) . ' ' . $delimiter . ' ' . _x( 'P', 'Postponed', 'wp-club-manager' );
+			$side1 = _x( 'P', 'Postponed', 'wp-club-manager' );
+			$side2 = _x( 'P', 'Postponed', 'wp-club-manager' );
+		}
+	} elseif( $hide == 'yes' && ! is_user_logged_in() ) {
 		$result = ( $played ? __( 'x', 'wp-club-manager' ) . ' ' . $delimiter . ' ' . __( 'x', 'wp-club-manager' ) : '' );
 		$side1 = __( 'x', 'wp-club-manager' );
 		$side2 = __( 'x', 'wp-club-manager' );
@@ -356,26 +393,31 @@ function wpcm_get_match_venue( $post ) {
 
 	if ( is_array( $venues ) ) {
 		$venue = reset($venues);
-		$name = $venue->name;
-		$t_id = $venue->term_id;
-		$venue_meta = get_option( "taxonomy_term_$t_id" );
-		$address = $venue_meta['wpcm_address'];
+		$venue_info['name'] = $venue->name;
+		$venue_info['id'] = $venue->term_id;
+		$venue_info['description'] = $venue->description;
+		$venue_meta = get_option( "taxonomy_term_".$venue_info['id']."" );
+		$venue_info['address'] = $venue_meta['wpcm_address'];
+		$venue_info['capacity'] = $venue_meta['wpcm_capacity'];
 	} else {
-		$name = null;
-		$address = null;
+		$venue_info['name'] = null;
+		$venue_info['id'] = null;
+		$venue_info['description'] = null;
+		$venue_info['address'] = null;
+		$venue_info['capacity'] = null;
 	}
 
 	if ( $neutral ) {
-		$status = __('N', 'wp-club-manager');
+		$venue_info['status'] = _x('N', 'Neutral ground', 'wp-club-manager');
 	} else {
 		if ( $club == $home_club ) {
-			$status = __('H', 'wp-club-manager');
+			$venue_info['status'] = _x('H', 'Home ground', 'wp-club-manager');
 		} else {
-			$status = __('A', 'wp-club-manager');
+			$venue_info['status'] = _x('A', 'Away ground', 'wp-club-manager');
 		}
 	}
 
-	return array( $name, $status, $address );
+	return $venue_info;
 }
 
 /**

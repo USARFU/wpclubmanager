@@ -32,27 +32,25 @@ class WPCM_Birthdays_Widget extends WPCM_Widget {
 				'std'   => __( 'Upcoming Birthdays', 'wp-club-manager' ),
 				'label' => __( 'Title', 'wp-club-manager' )
 			),
+			'id' => array(
+				'type'  => 'posts_select',
+				'post_type'   => 'wpcm_roster',
+				'show_option_none'   => false,
+				'std' => null,
+				'orderby' => 'post_id',
+				'order' => 'ASC',
+				'limit' => -1,
+				'label' => __( 'Choose Roster', 'wp-club-manager' ),
+			),
 			'include_staff'=> array(
 				'type'  => 'checkbox',
 				'std'   => 1,
 				'label' => __( 'Include Staff', 'wp-club-manager' )
 			),
-			'season' => array(
-				'type'  => 'tax_select',
-				'taxonomy'   => 'wpcm_season',
-				'std'   => '',
-				'label' => __( 'Season', 'wp-club-manager' ),
-			),
-			'team' => array(
-				'type'  => 'tax_select',
-				'taxonomy'   => 'wpcm_team',
-				'std'   => '',
-				'label' => __( 'Team', 'wp-club-manager' ),
-			),
 			'date' => array(
 				'type'  => 'select',
 				'std'   => '+4 weeks',
-				'label' => __( 'Birthday', 'wp-club-manager' ),
+				'label' => __( 'Date Range', 'wp-club-manager' ),
 				'options' => array(
 					'today'  => __( 'Today', 'wp-club-manager' ),
 					'+1 week' => __( '1 Week', 'wp-club-manager' ),
@@ -79,17 +77,26 @@ class WPCM_Birthdays_Widget extends WPCM_Widget {
 	 */
 	public function get_birthdays( $args, $instance ) {
 
+		$id = isset( $instance['id'] ) ? $instance['id'] : null;
 		$include_staff = isset( $instance['include_staff'] ) ? $instance['include_staff'] : 1;
-		$season = isset( $instance['season'] ) ? $instance['season'] : null;
-		$team = isset( $instance['team'] ) ? $instance['team'] : null;
-		if ( $season <= 0 ) $season = null;
-		if ( $team <= 0 ) $team = null;
+		// $season = isset( $instance['season'] ) ? $instance['season'] : null;
+		// $team = isset( $instance['team'] ) ? $instance['team'] : null;
+		// if ( $season <= 0 ) $season = null;
+		// if ( $team <= 0 ) $team = null;
 		$date = isset( $instance['date'] ) ? $instance['date'] : '+4 weeks';
+
+		$selected_players = (array)unserialize( get_post_meta( $id, '_wpcm_roster_players', true ) );
+		$selected_staff = (array)unserialize( get_post_meta( $id, '_wpcm_roster_staff', true ) );
+		$selected = array_merge( $selected_players, $selected_staff );
 
 		if( $include_staff ) {
 			$post_types = array('wpcm_player', 'wpcm_staff' );
+			$selected_players = (array)unserialize( get_post_meta( $id, '_wpcm_roster_players', true ) );
+			$selected_staff = (array)unserialize( get_post_meta( $id, '_wpcm_roster_staff', true ) );
+			$selected = array_merge( $selected_players, $selected_staff );
 		} else {
 			$post_types = 'wpcm_player';
+			$selected = (array)unserialize( get_post_meta( $id, '_wpcm_roster_players', true ) );
 		}
 
 		$query_args = array(
@@ -97,21 +104,23 @@ class WPCM_Birthdays_Widget extends WPCM_Widget {
 			'posts_per_page' => -1,
 			'order' => 'ASC',
 			'post_type' => $post_types,
+			'suppress_filters' => 0,
+			'post__in' => $selected
 		);
 
-		if ( isset( $season ) )
-			$query_args['tax_query'][] = array(
-				'taxonomy' => 'wpcm_season',
-				'terms' => $season,
-				'field' => 'term_id',
-			);
+		// if ( isset( $season ) )
+		// 	$query_args['tax_query'][] = array(
+		// 		'taxonomy' => 'wpcm_season',
+		// 		'terms' => $season,
+		// 		'field' => 'term_id',
+		// 	);
 
-		if ( isset( $team ) )
-			$query_args['tax_query'][] = array(
-				'taxonomy' => 'wpcm_team',
-				'terms' => $team,
-				'field' => 'term_id',
-			);
+		// if ( isset( $team ) )
+		// 	$query_args['tax_query'][] = array(
+		// 		'taxonomy' => 'wpcm_team',
+		// 		'terms' => $team,
+		// 		'field' => 'term_id',
+		// 	);
 
 		$birthdays = get_posts( $query_args );
 
