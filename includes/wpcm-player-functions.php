@@ -7,10 +7,42 @@
  * @author 		ClubPress
  * @category 	Core
  * @package 	WPClubManager/Functions
- * @version     1.4.6
+ * @version     2.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+/**
+ * Get player titles.
+ *
+ * @return string
+ * @since 2.0.0
+ */
+function get_player_title( $post, $format = 'full' ) {
+
+	$firstname = get_post_meta( $post, '_wpcm_firstname', true );
+	$lastname = get_post_meta( $post, '_wpcm_lastname', true );
+	$name = get_the_title( $post );
+
+	$name = trim( $name );
+	if( strpos( $name, ' ' ) === false ) {
+		return $name;
+	}
+
+	$first = strtok( $name, ' ' );
+	$start = strrpos( $name, ' ' ) + 1;
+	$last = substr( $name, $start );
+
+	if ( $format == 'first' ) {
+		$name = ( $firstname ? $firstname : $first );
+	} elseif ( $format == 'last' ) {
+		$name = ( $lastname ? $lastname : $last );
+	} elseif ( $format == 'initial' ) {
+		$name = ( $firstname ? substr( $firstname, 0, 1 ) . '. ' : '' ) . ( $lastname ? $lastname : substr( $first, 0, 1 ) . '. ' . $last );
+	}
+
+	return $name;
+}
 
 /**
  * Get player labels.
@@ -457,15 +489,12 @@ function wpcm_staff_labels() {
 
 	$labels = array(
 		'flag' => '&nbsp;',
-		'number' => '&nbsp;',
 		'name' => __( 'Name', 'wp-club-manager' ),
 		'thumb' => '&nbsp',
 		'job' => __( 'Job', 'wp-club-manager' ),
 		'email' => __( 'Email', 'wp-club-manager' ),
 		'phone' => __( 'Phone', 'wp-club-manager' ),
 		'age' => __( 'Age', 'wp-club-manager' ),
-		'team' => __( 'Team', 'wp-club-manager' ),
-		'season' => __( 'Season', 'wp-club-manager' ),
 		'joined' => __( 'Joined', 'wp-club-manager' )
 	);
 

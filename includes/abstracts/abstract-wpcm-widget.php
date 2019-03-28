@@ -134,6 +134,8 @@ abstract class WPCM_Widget extends WP_Widget {
 					$instance[ $key ] = is_null( $new_instance[ $key ] ) ? 0 : 1;
 				break;
 				case 'player_stats' :
+					if ( is_array( $new_instance[ $key ] ) ) $new_instance[ $key ] = implode(',', $new_instance[ $key ]);
+					$instance[ $key ] = strip_tags($new_instance[ $key ]);
 				case 'standings_columns' :
 					if ( is_array( $new_instance[ $key ] ) ) $new_instance[ $key ] = implode(',', $new_instance[ $key ]);
 					$instance[ $key ] = strip_tags($new_instance[ $key ]);
@@ -208,7 +210,8 @@ abstract class WPCM_Widget extends WP_Widget {
 						$args = array(
 							'show_option_none' 	=> __( 'All', 'wp-club-manager' ),
 							'hide_empty' 		=> 0,
-							'orderby' 			=> 'title',
+							'orderby' => 'tax_position',
+							'meta_key' => 'tax_position',
 							'taxonomy' 			=> $setting['taxonomy'],
 							'selected' 			=> $value,
 							'name' 				=> $this->get_field_name( $key ),
@@ -239,7 +242,8 @@ abstract class WPCM_Widget extends WP_Widget {
 					 <div class="wpcm-widget-admin"><label for="<?php echo $this->get_field_id( $key ); ?>"><?php echo $setting['label']; ?></label>
 						<?php
 						$args = array(
-							'show_option_none' 	=> __( 'None', 'wp-club-manager' ),
+							//'show_option_none' 	=> __( 'None', 'wp-club-manager' ),
+							'show_option_none' 	=> $setting['show_option_none'],
 							'selected' 			=> $value,
 							'name' 				=> $this->get_field_name( $key ),
 							'id' 				=> $this->get_field_id( $key ),
