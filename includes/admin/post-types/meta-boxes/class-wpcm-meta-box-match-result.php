@@ -79,7 +79,7 @@ class WPCM_Meta_Box_Match_Result {
 		<div id="results-table">
 
 		<?php
-		if( get_option( 'wpcm_results_box_scores' ) != 'no' ) { ?>
+		if( get_option( 'wpcm_match_box_scores' ) != 'no' ) { ?>
 
 			<table class="box-scores-table">
 				<thead>
@@ -90,7 +90,7 @@ class WPCM_Meta_Box_Match_Result {
 					</tr>
 				</thead>
 				<tbody>
-							
+
 					<?php
 					if( $sport == 'volleyball' ) :
 
@@ -229,7 +229,7 @@ class WPCM_Meta_Box_Match_Result {
 				} else { ?>
 
 					<tbody>
-						
+
 						<?php do_action('wpclubmanager_admin_results_table', $post->ID ); ?>
 						<tr>
 							<th align="right"><?php _e( 'Final Score', 'wp-club-manager' ); ?></th>
@@ -287,7 +287,7 @@ class WPCM_Meta_Box_Match_Result {
 			<?php } ?>
 
 			<?php if ( $sport == 'hockey' || $sport == 'handball' ) { ?>
-				
+
 				<p>
 					<label class="selectit">
 						<input type="checkbox" name="wpcm_shootout" id="wpcm_shootout" value="1" <?php checked( true, $shootout ); ?> />
@@ -298,7 +298,7 @@ class WPCM_Meta_Box_Match_Result {
 			<?php } ?>
 
 			<?php if ( $sport == 'soccer' ) { ?>
-				
+
 				<p>
 					<label class="selectit">
 						<input type="checkbox" name="wpcm_overtime" id="wpcm_overtime" value="1" <?php checked( true, $overtime ); ?> />

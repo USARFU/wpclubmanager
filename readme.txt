@@ -1,6 +1,6 @@
 === WP Club Manager - WordPress Sports Club Plugin===
-Contributors: clubpress, leonterry, leabu85
-Tags: club, teams, sports, sports club, club management, club website, league management, league tables, team rosters, fixtures, results 
+Contributors: clubpress, leonterry, leabu85, daveyjake
+Tags: club, teams, sports, sports club, club management, club website, league management, league tables, team rosters, fixtures, results
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ZGGZXX2EQTZ9E
 Requires at least: 4.7
 Tested up to: 5.1
@@ -16,7 +16,7 @@ WP Club Manager is a sports plugin used to create and manage a club or league we
 
 = Endorsed by USA Rugby =
 
-> "*It's perfect for the professional sports web developer and the first-time team administrator. Incredibly easy to customize and integrate, I highly recommend WP Club Manager to any sports team who wants a better website!*"  
+> "*It's perfect for the professional sports web developer and the first-time team administrator. Incredibly easy to customize and integrate, I highly recommend WP Club Manager to any sports team who wants a better website!*"
 Davey Jacobson, *Digital Platform Developer*, [USA Rugby](http://usarugby.org)
 
 = Features Include =
